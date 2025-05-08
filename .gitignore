@@ -35,3 +35,10 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### env, key ###
+/src/main/resources/env.properties
+/src/test/resources/env.properties
+
+## Mac meta_data
+.DS_Store
