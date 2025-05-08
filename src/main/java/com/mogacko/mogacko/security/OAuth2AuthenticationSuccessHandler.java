@@ -21,7 +21,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private final JwtTokenProvider tokenProvider;
     private final UserRepository userRepository;
-    private final String MOBILE_REDIRECT_URI = "mogacko://oauth/callback";
+    private final String MOBILE_REDIRECT_URI = "com.mogacko://oauth2callback";
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
