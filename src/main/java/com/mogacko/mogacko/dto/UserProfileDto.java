@@ -23,4 +23,5 @@ public class UserProfileDto {
     private Integer mentorScore;
     private String profileImage;
     private List<InterestDto> interests;
+    private Boolean onboardingCompleted;
 }

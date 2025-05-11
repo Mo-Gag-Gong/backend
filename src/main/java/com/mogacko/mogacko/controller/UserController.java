@@ -4,6 +4,8 @@ import com.mogacko.mogacko.dto.InterestDto;
 import com.mogacko.mogacko.dto.ProfileUpdateRequest;
 import com.mogacko.mogacko.dto.UserProfileDto;
 import com.mogacko.mogacko.entity.User;
+import com.mogacko.mogacko.entity.UserProfile;
+import com.mogacko.mogacko.repository.UserProfileRepository;
 import com.mogacko.mogacko.service.AuthService;
 import com.mogacko.mogacko.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +19,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
@@ -27,6 +32,7 @@ public class UserController {
 
     private final UserService userService;
     private final AuthService authService;
+    private final UserProfileRepository userProfileRepository;
 
     /**
      * 현재 사용자의 프로필 정보를 조회합니다.
@@ -53,6 +59,33 @@ public class UserController {
         }
 
         return ResponseEntity.ok(profileDto);
+    }
+
+    /**
+     * 사용자의 온보딩 상태를 확인합니다.
+     *
+     * @return 온보딩 상태 정보
+     */
+    @Operation(summary = "사용자 온보딩 상태(프로필 작성 상태) 확인", description = "현재 로그인한 사용자의 온보딩 완료 여부를 확인합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "온보딩 상태 확인 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    @GetMapping("/onboarding-status")
+    public ResponseEntity<Map<String, Object>> getOnboardingStatus() {
+        User currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        Optional<UserProfile> profileOpt = userProfileRepository.findByUser(currentUser);
+        boolean onboardingCompleted = profileOpt.isPresent() && profileOpt.get().getOnboardingCompleted();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("onboardingCompleted", onboardingCompleted);
+        response.put("role", currentUser.getRole());
+
+        return ResponseEntity.ok(response);
     }
 
     /**

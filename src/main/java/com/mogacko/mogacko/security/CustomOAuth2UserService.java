@@ -2,8 +2,10 @@ package com.mogacko.mogacko.security;
 
 import com.mogacko.mogacko.entity.User;
 import com.mogacko.mogacko.entity.UserProfile;
+import com.mogacko.mogacko.entity.UserStatistics;
 import com.mogacko.mogacko.repository.UserProfileRepository;
 import com.mogacko.mogacko.repository.UserRepository;
+import com.mogacko.mogacko.repository.UserStatisticsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -15,6 +17,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -25,6 +28,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
+    private final UserStatisticsRepository userStatisticsRepository;
 
     @Override
     @Transactional
@@ -67,6 +71,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         throw new OAuth2AuthenticationException("Unsupported provider: " + registrationId);
     }
 
+
     @Transactional
     public User saveOrUpdateUser(OAuthAttributes attributes, String provider) {
         Optional<User> existingUser = userRepository.findByEmail(attributes.getEmail());
@@ -80,25 +85,45 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             }
             return user;
         } else {
-            // 새 사용자 생성
+            // 새 사용자 생성 - ROLE_GUEST로 설정
             User newUser = User.builder()
                     .email(attributes.getEmail())
                     .profileImage(attributes.getPicture())
                     .oauthId(attributes.getNameAttributeKey())
                     .provider(provider)
-                    .role("ROLE_USER")
+                    .role("ROLE_GUEST")
                     .build();
 
             User savedUser = userRepository.save(newUser);
 
-            // 기본 프로필 생성
-            UserProfile profile = UserProfile.builder()
-                    .user(savedUser)
-                    .name(attributes.getName())
-                    .mentorScore(0)
-                    .build();
+            // 1. 사용자 프로필 생성
+            Optional<UserProfile> existingProfile = userProfileRepository.findByUser(savedUser);
 
-            userProfileRepository.save(profile);
+            if (existingProfile.isEmpty()) {
+                UserProfile profile = UserProfile.builder()
+                        .user(savedUser)
+                        .name(attributes.getName())
+                        .mentorScore(0)
+                        .onboardingCompleted(false)
+                        .build();
+
+                userProfileRepository.save(profile);
+            }
+
+            // 2. 사용자 통계 레코드 생성
+            Optional<UserStatistics> existingStats = userStatisticsRepository.findByUser(savedUser);
+
+            if (existingStats.isEmpty()) {
+                UserStatistics statistics = UserStatistics.builder()
+                        .user(savedUser)
+                        .groupParticipationCount(0)
+                        .attendanceRate(0.0)
+                        .totalStudySessions(0)
+                        .lastUpdated(LocalDateTime.now())
+                        .build();
+
+                userStatisticsRepository.save(statistics);
+            }
 
             return savedUser;
         }

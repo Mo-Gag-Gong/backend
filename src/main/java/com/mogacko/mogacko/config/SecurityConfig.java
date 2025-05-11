@@ -44,7 +44,10 @@ public class SecurityConfig {
                         // 기존 허용 경로
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
-                        .anyRequest().authenticated()
+                        // 온보딩(추가 정보 입력) API는 GUEST 권한도 접근 가능
+                        .requestMatchers("/api/users/profile").hasAnyRole("GUEST", "USER")
+                        // 나머지 API는 USER 권한만 접근 가능
+                        .anyRequest().hasRole("USER")
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo

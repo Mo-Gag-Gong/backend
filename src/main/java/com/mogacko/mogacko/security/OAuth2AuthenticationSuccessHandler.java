@@ -1,6 +1,8 @@
 package com.mogacko.mogacko.security;
 
 import com.mogacko.mogacko.entity.User;
+import com.mogacko.mogacko.entity.UserProfile;
+import com.mogacko.mogacko.repository.UserProfileRepository;
 import com.mogacko.mogacko.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +23,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private final JwtTokenProvider tokenProvider;
     private final UserRepository userRepository;
+    private final UserProfileRepository userProfileRepository;
+
     private final String MOBILE_REDIRECT_URI = "com.mogacko://oauth2callback";
 
     @Override
@@ -36,9 +40,14 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             User user = userOptional.get();
             String token = tokenProvider.generateToken(user);
 
+            // 온보딩 상태 확인
+            Optional<UserProfile> profileOpt = userProfileRepository.findByUser(user);
+            boolean onboardingCompleted = profileOpt.isPresent() && profileOpt.get().getOnboardingCompleted();
+
             String targetUrl = UriComponentsBuilder.fromUriString(MOBILE_REDIRECT_URI)
                     .queryParam("token", token)
                     .queryParam("userId", user.getUserId())
+                    .queryParam("onboardingCompleted", onboardingCompleted)
                     .build().toUriString();
 
             getRedirectStrategy().sendRedirect(request, response, targetUrl);

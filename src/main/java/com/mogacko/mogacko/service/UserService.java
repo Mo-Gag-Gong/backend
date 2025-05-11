@@ -11,6 +11,7 @@ import com.mogacko.mogacko.entity.UserProfile;
 import com.mogacko.mogacko.repository.InterestRepository;
 import com.mogacko.mogacko.repository.UserInterestRepository;
 import com.mogacko.mogacko.repository.UserProfileRepository;
+import com.mogacko.mogacko.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ public class UserService {
 
     private final UserProfileRepository userProfileRepository;
     private final InterestRepository interestRepository;
+    private final UserRepository userRepository;
     private final UserInterestRepository userInterestRepository;
 
     public UserProfileDto getUserProfile(User user) {
@@ -55,6 +57,7 @@ public class UserService {
         }
 
         UserProfile profile = profileOpt.get();
+        boolean wasOnboardingIncomplete = !profile.getOnboardingCompleted();
 
         // 프로필 업데이트
         if (request.getName() != null) profile.setName(request.getName());
@@ -62,7 +65,23 @@ public class UserService {
         if (request.getPhoneNumber() != null) profile.setPhoneNumber(request.getPhoneNumber());
         if (request.getBirthYear() != null) profile.setBirthYear(request.getBirthYear());
 
+        // 필수 필드가 모두 입력되었는지 확인 (이름, 성별, 생년월일이 필수라고 가정)
+        boolean allRequiredFieldsFilled = profile.getName() != null &&
+                profile.getGender() != null &&
+                profile.getBirthYear() != null;
+
+        // 필수 필드가 모두 입력되었으면 onboardingCompleted를 true로 설정
+        if (allRequiredFieldsFilled) {
+            profile.setOnboardingCompleted(true);
+        }
+
         userProfileRepository.save(profile);
+
+        // 추가 정보 입력이 완료되었고, 이전에는 미완료 상태였다면 ROLE 업데이트
+        if (profile.getOnboardingCompleted() && wasOnboardingIncomplete) {
+            user.setRole("ROLE_USER");
+            userRepository.save(user);
+        }
 
         // 관심사 업데이트
         if (request.getInterestIds() != null && !request.getInterestIds().isEmpty()) {

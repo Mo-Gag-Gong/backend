@@ -35,6 +35,9 @@ public class UserProfile {
 
     private Integer mentorScore;
 
+    @Column(nullable = false)
+    private Boolean onboardingCompleted = false; // 추가 정보 입력 완료 여부
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

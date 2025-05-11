@@ -29,7 +29,22 @@ public class UserStatisticsService {
             return mapToUserStatisticsDto(stats);
         }
 
-        return null;
+        // 통계가 없으면 새로 생성
+        return createUserStatistics(user);
+    }
+
+    @Transactional
+    public UserStatisticsDto createUserStatistics(User user) {
+        UserStatistics statistics = UserStatistics.builder()
+                .user(user)
+                .groupParticipationCount(0)
+                .attendanceRate(0.0)
+                .totalStudySessions(0)
+                .lastUpdated(LocalDateTime.now())
+                .build();
+
+        UserStatistics savedStats = statisticsRepository.save(statistics);
+        return mapToUserStatisticsDto(savedStats);
     }
 
     @Transactional
