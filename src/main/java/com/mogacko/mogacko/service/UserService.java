@@ -64,6 +64,7 @@ public class UserService {
         if (request.getGender() != null) profile.setGender(request.getGender());
         if (request.getPhoneNumber() != null) profile.setPhoneNumber(request.getPhoneNumber());
         if (request.getBirthYear() != null) profile.setBirthYear(request.getBirthYear());
+        if (request.getLocationName() != null) profile.setLocationName(request.getLocationName());
 
         // 필수 필드가 모두 입력되었는지 확인 (이름, 성별, 생년월일이 필수라고 가정)
         boolean allRequiredFieldsFilled = profile.getName() != null &&
@@ -179,7 +180,6 @@ public class UserService {
                 .gender(profile.getGender())
                 .phoneNumber(profile.getPhoneNumber())
                 .birthYear(profile.getBirthYear())
-                .mentorScore(profile.getMentorScore())
                 .profileImage(profile.getUser().getProfileImage())
                 .build();
     }

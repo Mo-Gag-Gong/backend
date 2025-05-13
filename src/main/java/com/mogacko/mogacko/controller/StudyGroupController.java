@@ -52,7 +52,7 @@ public class StudyGroupController {
     /**
      * 특정 카테고리의 스터디 그룹 목록을 페이지 단위로 조회합니다.
      *
-     * @param category 스터디 그룹 카테고리
+     * @param interest 스터디 그룹 카테고리
      * @param page 페이지 번호 (0부터 시작)
      * @param size 페이지 크기
      * @return 카테고리별 스터디 그룹 목록
@@ -61,13 +61,13 @@ public class StudyGroupController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "카테고리별 그룹 목록 조회 성공")
     })
-    @GetMapping("/category/{category}")
-    public ResponseEntity<Page<StudyGroupDto>> getGroupsByCategory(
-            @Parameter(description = "스터디 그룹 카테고리") @PathVariable String category,
+    @GetMapping("/interest/{interest}")
+    public ResponseEntity<Page<StudyGroupDto>> getGroupsByInterest(
+            @Parameter(description = "스터디 그룹 카테고리(관심사)") @PathVariable String interest,
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "10") int size) {
 
-        Page<StudyGroupDto> groups = studyGroupService.getGroupsByCategory(category, page, size);
+        Page<StudyGroupDto> groups = studyGroupService.getGroupsByInterest(interest, page, size);
         return ResponseEntity.ok(groups);
     }
 

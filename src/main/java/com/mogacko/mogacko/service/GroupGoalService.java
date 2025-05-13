@@ -8,7 +8,6 @@ import com.mogacko.mogacko.entity.GroupMember;
 import com.mogacko.mogacko.entity.StudyGroup;
 import com.mogacko.mogacko.entity.User;
 import com.mogacko.mogacko.entity.UserProfile;
-import com.mogacko.mogacko.repository.GroupGoalDetailRepository;
 import com.mogacko.mogacko.repository.GroupGoalRepository;
 import com.mogacko.mogacko.repository.GroupMemberRepository;
 import com.mogacko.mogacko.repository.StudyGroupRepository;

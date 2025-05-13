@@ -17,11 +17,9 @@ public class StudyGroupDto {
     private Long creatorId;
     private String creatorName;
     private String title;
-    private String category;
+    private String interestName;
     private String description;
     private String locationName;
-    private Integer latitude;
-    private Integer longitude;
     private LocalDate startDate;
     private LocalDate endDate;
     private Integer maxMembers;

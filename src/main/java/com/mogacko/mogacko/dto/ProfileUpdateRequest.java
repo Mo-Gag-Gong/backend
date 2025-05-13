@@ -13,6 +13,7 @@ public class ProfileUpdateRequest {
     private String name;
     private String gender;
     private String phoneNumber;
+    private String locationName;
     private Integer birthYear;
     private List<Long> interestIds;
 }

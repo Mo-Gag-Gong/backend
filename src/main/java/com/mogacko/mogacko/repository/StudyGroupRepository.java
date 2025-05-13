@@ -1,4 +1,3 @@
-// src/main/java/com/mogacko/mogacko/repository/StudyGroupRepository.java
 package com.mogacko.mogacko.repository;
 
 import com.mogacko.mogacko.entity.StudyGroup;
@@ -17,8 +16,8 @@ public interface StudyGroupRepository extends JpaRepository<StudyGroup, Long> {
     @Query("SELECT sg FROM StudyGroup sg WHERE sg.isActive = true")
     Page<StudyGroup> findActiveGroups(Pageable pageable);
 
-    @Query("SELECT sg FROM StudyGroup sg WHERE sg.isActive = true AND sg.category = :category")
-    Page<StudyGroup> findActiveGroupsByCategory(@Param("category") String category, Pageable pageable);
+    @Query("SELECT sg FROM StudyGroup sg JOIN Interest interest WHERE sg.isActive = true AND interest.interestName = :category")
+    Page<StudyGroup> findActiveGroupsByInterestName(@Param("category") String category, Pageable pageable);
 
     // LOWER 함수 사용 방식 수정
     @Query("SELECT sg FROM StudyGroup sg WHERE sg.title LIKE %:keyword% OR sg.description LIKE %:keyword%")

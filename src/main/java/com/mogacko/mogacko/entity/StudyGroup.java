@@ -28,7 +28,7 @@ public class StudyGroup {
     private String title;
 
     @Column(length = 50, nullable = false)
-    private String category;
+    private Long interestId;
 
     @Lob
     @Column(columnDefinition = "TEXT")
@@ -36,10 +36,6 @@ public class StudyGroup {
 
     @Column(length = 100)
     private String locationName;
-
-    private Integer latitude;
-
-    private Integer longitude;
 
     private LocalDate startDate;
 

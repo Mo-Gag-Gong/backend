@@ -3,11 +3,10 @@ package com.mogacko.mogacko.service;
 import com.mogacko.mogacko.dto.GroupCreateRequest;
 import com.mogacko.mogacko.dto.GroupMemberDto;
 import com.mogacko.mogacko.dto.StudyGroupDto;
-import com.mogacko.mogacko.entity.GroupMember;
-import com.mogacko.mogacko.entity.StudyGroup;
-import com.mogacko.mogacko.entity.User;
-import com.mogacko.mogacko.entity.UserProfile;
+import com.mogacko.mogacko.entity.*;
+import com.mogacko.mogacko.exception.ResourceNotFoundException;
 import com.mogacko.mogacko.repository.GroupMemberRepository;
+import com.mogacko.mogacko.repository.InterestRepository;
 import com.mogacko.mogacko.repository.StudyGroupRepository;
 import com.mogacko.mogacko.repository.UserProfileRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +29,7 @@ public class StudyGroupService {
     private final StudyGroupRepository studyGroupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final UserProfileRepository userProfileRepository;
+    private final InterestRepository interestRepository;
 
     public Page<StudyGroupDto> getAllGroups(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -41,9 +41,9 @@ public class StudyGroupService {
         });
     }
 
-    public Page<StudyGroupDto> getGroupsByCategory(String category, int page, int size) {
+    public Page<StudyGroupDto> getGroupsByInterest(String interestName, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<StudyGroup> groupPage = studyGroupRepository.findActiveGroupsByCategory(category, pageable);
+        Page<StudyGroup> groupPage = studyGroupRepository.findActiveGroupsByInterestName(interestName, pageable);
 
         return groupPage.map(group -> {
             int currentMembers = groupMemberRepository.countActiveMembers(group);
@@ -86,15 +86,15 @@ public class StudyGroupService {
 
     @Transactional
     public StudyGroupDto createGroup(User user, GroupCreateRequest request) {
+        Interest requestInterest = interestRepository.findByInterestName(request.getInterest()).orElseThrow(()->new ResourceNotFoundException("찾을 수 없는 관심사 입니다."));
+
         // 스터디 그룹 생성
         StudyGroup newGroup = StudyGroup.builder()
                 .creator(user)
                 .title(request.getTitle())
-                .category(request.getCategory())
+                .interestId(requestInterest.getInterestId())
                 .description(request.getDescription())
                 .locationName(request.getLocationName())
-                .latitude(request.getLatitude())
-                .longitude(request.getLongitude())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .maxMembers(request.getMaxMembers())
@@ -132,13 +132,14 @@ public class StudyGroupService {
             return null;
         }
 
+        Interest requestInterest = interestRepository.findByInterestName(request.getInterest()).orElseThrow(()->new ResourceNotFoundException("찾을 수 없는 관심사 입니다."));
+
+
         // 그룹 정보 업데이트
         group.setTitle(request.getTitle());
-        group.setCategory(request.getCategory());
+        group.setInterestId(requestInterest.getInterestId());
         group.setDescription(request.getDescription());
         group.setLocationName(request.getLocationName());
-        group.setLatitude(request.getLatitude());
-        group.setLongitude(request.getLongitude());
         group.setStartDate(request.getStartDate());
         group.setEndDate(request.getEndDate());
         group.setMaxMembers(request.getMaxMembers());
@@ -272,16 +273,15 @@ public class StudyGroupService {
             creatorName = creatorProfile.get().getName();
         }
 
+        Interest findedInterest = interestRepository.findById(group.getInterestId()).orElseThrow(()->new ResourceNotFoundException("해당 관심사 객체를 찾을 수 없습니다."));
         return StudyGroupDto.builder()
                 .groupId(group.getGroupId())
                 .creatorId(group.getCreator().getUserId())
                 .creatorName(creatorName)
                 .title(group.getTitle())
-                .category(group.getCategory())
+                .interestName(findedInterest.getInterestName())
                 .description(group.getDescription())
                 .locationName(group.getLocationName())
-                .latitude(group.getLatitude())
-                .longitude(group.getLongitude())
                 .startDate(group.getStartDate())
                 .endDate(group.getEndDate())
                 .maxMembers(group.getMaxMembers())
