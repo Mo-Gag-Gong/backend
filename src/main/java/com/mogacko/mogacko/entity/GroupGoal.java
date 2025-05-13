@@ -31,6 +31,10 @@ public class GroupGoal {
     @Column(length = 100, nullable = false)
     private String title;
 
+    @Lob
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String description;
+
     private Integer pointValue;
 
     private LocalDate endDate;

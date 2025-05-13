@@ -24,20 +24,20 @@ public class AuthController {
     private final AuthService authService;
 
     /**
-     * 기존 JWT 토큰으로 새 토큰을 발급합니다.
+     * Refresh Token으로 새로운 Access Token과 Refresh Token을 발급합니다.
      *
-     * @param request 갱신할 토큰 정보
+     * @param request 갱신할 Refresh Token 정보
      * @return 새로운 인증 토큰 정보
      */
-    @Operation(summary = "토큰 갱신", description = "기존 JWT 토큰으로 새 토큰을 발급합니다.")
+    @Operation(summary = "토큰 갱신", description = "Refresh Token으로 새로운 Access Token과 Refresh Token을 발급합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "토큰 갱신 성공",
                     content = @Content(schema = @Schema(implementation = AuthResponse.class))),
             @ApiResponse(responseCode = "400", description = "유효하지 않은 토큰")
     })
-    @PostMapping("/token")
+    @PostMapping("/token/refresh")
     public ResponseEntity<AuthResponse> refreshToken(
-            @Parameter(description = "갱신할 토큰 정보") @RequestBody TokenRequest request) {
+            @Parameter(description = "갱신할 Refresh Token 정보") @RequestBody TokenRequest request) {
         AuthResponse response = authService.refreshToken(request);
         if (response == null) {
             return ResponseEntity.badRequest().build();

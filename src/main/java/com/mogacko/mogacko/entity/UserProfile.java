@@ -33,7 +33,8 @@ public class UserProfile {
 
     private Integer birthYear;
 
-    private Integer mentorScore;
+    @Column(length = 100)
+    private String location_name;
 
     @Column(nullable = false)
     private Boolean onboardingCompleted = false; // 추가 정보 입력 완료 여부

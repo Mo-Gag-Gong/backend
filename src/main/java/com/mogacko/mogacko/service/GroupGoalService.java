@@ -4,7 +4,6 @@ import com.mogacko.mogacko.dto.GoalDetailDto;
 import com.mogacko.mogacko.dto.GroupGoalCreateRequest;
 import com.mogacko.mogacko.dto.GroupGoalDto;
 import com.mogacko.mogacko.entity.GroupGoal;
-import com.mogacko.mogacko.entity.GroupGoalDetail;
 import com.mogacko.mogacko.entity.GroupMember;
 import com.mogacko.mogacko.entity.StudyGroup;
 import com.mogacko.mogacko.entity.User;

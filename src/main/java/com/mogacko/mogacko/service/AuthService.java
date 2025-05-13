@@ -20,11 +20,12 @@ public class AuthService {
     private final UserRepository userRepository;
 
     public AuthResponse refreshToken(TokenRequest request) {
-        if (!tokenProvider.validateToken(request.getToken())) {
+        // Refresh Token 검증
+        if (!tokenProvider.validateRefreshToken(request.getRefreshToken())) {
             return null;
         }
 
-        Long userId = Long.parseLong(tokenProvider.getClaims(request.getToken()).getSubject());
+        Long userId = Long.parseLong(tokenProvider.getClaims(request.getRefreshToken()).getSubject());
         Optional<User> userOptional = userRepository.findById(userId);
 
         if (userOptional.isEmpty()) {
@@ -32,9 +33,12 @@ public class AuthService {
         }
 
         User user = userOptional.get();
-        String newToken = tokenProvider.generateToken(user);
 
-        return new AuthResponse(newToken, user.getUserId());
+        // 새로운 Access Token과 Refresh Token 발급
+        String newAccessToken = tokenProvider.generateAccessToken(user);
+        String newRefreshToken = tokenProvider.generateRefreshToken(user);
+
+        return new AuthResponse(newAccessToken, newRefreshToken, user.getUserId());
     }
 
     public User getCurrentUser() {

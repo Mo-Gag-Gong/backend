@@ -3,7 +3,6 @@ package com.mogacko.mogacko.service;
 import com.mogacko.mogacko.dto.UserStatisticsDto;
 import com.mogacko.mogacko.entity.User;
 import com.mogacko.mogacko.entity.UserStatistics;
-import com.mogacko.mogacko.repository.AttendanceRepository;
 import com.mogacko.mogacko.repository.GroupMemberRepository;
 import com.mogacko.mogacko.repository.UserStatisticsRepository;
 import lombok.RequiredArgsConstructor;

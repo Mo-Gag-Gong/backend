@@ -1,4 +1,3 @@
-// src/main/java/com/mogacko/mogacko/dto/AuthResponse.java
 package com.mogacko.mogacko.dto;
 
 import lombok.AllArgsConstructor;
@@ -9,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthResponse {
-    private String token;
+    private String accessToken;
+    private String refreshToken;
     private Long userId;
 }

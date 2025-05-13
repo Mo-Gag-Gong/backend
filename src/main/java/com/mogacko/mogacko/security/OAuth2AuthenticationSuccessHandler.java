@@ -38,14 +38,18 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            String token = tokenProvider.generateToken(user);
+
+            // Access Token과 Refresh Token 모두 발급
+            String accessToken = tokenProvider.generateAccessToken(user);
+            String refreshToken = tokenProvider.generateRefreshToken(user);
 
             // 온보딩 상태 확인
             Optional<UserProfile> profileOpt = userProfileRepository.findByUser(user);
             boolean onboardingCompleted = profileOpt.isPresent() && profileOpt.get().getOnboardingCompleted();
 
             String targetUrl = UriComponentsBuilder.fromUriString(MOBILE_REDIRECT_URI)
-                    .queryParam("token", token)
+                    .queryParam("accessToken", accessToken)
+                    .queryParam("refreshToken", refreshToken)
                     .queryParam("userId", user.getUserId())
                     .queryParam("onboardingCompleted", onboardingCompleted)
                     .build().toUriString();
