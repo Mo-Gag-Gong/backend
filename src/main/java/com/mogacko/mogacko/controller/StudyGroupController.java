@@ -1,8 +1,6 @@
 package com.mogacko.mogacko.controller;
 
-import com.mogacko.mogacko.dto.GroupCreateRequest;
-import com.mogacko.mogacko.dto.GroupMemberDto;
-import com.mogacko.mogacko.dto.StudyGroupDto;
+import com.mogacko.mogacko.dto.*;
 import com.mogacko.mogacko.entity.User;
 import com.mogacko.mogacko.service.AuthService;
 import com.mogacko.mogacko.service.StudyGroupService;
@@ -94,23 +92,44 @@ public class StudyGroupController {
     }
 
     /**
-     * 현재 사용자가 가입한 스터디 그룹 목록을 조회합니다.
+     * 현재 사용자가 그룹장(생성자)인 스터디 그룹 목록을 조회합니다.
      *
-     * @return 사용자의 스터디 그룹 목록
+     * @return 사용자가 그룹장인 스터디 그룹 목록
      */
-    @Operation(summary = "내 스터디 그룹 목록 조회", description = "현재 로그인한 사용자가 가입한 모든 스터디 그룹 목록을 조회합니다.")
+    @Operation(summary = "내가 그룹장인 스터디 그룹 목록 조회", description = "현재 로그인한 사용자가 그룹장(생성자)인 모든 스터디 그룹 목록을 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "내 그룹 목록 조회 성공"),
+            @ApiResponse(responseCode = "200", description = "그룹장 목록 조회 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
     })
-    @GetMapping("/my-groups")
-    public ResponseEntity<List<StudyGroupDto>> getMyGroups() {
+    @GetMapping("/my-owned-groups")
+    public ResponseEntity<List<StudyGroupDto>> getMyOwnedGroups() {
         User currentUser = authService.getCurrentUser();
         if (currentUser == null) {
             return ResponseEntity.status(401).build();
         }
 
-        List<StudyGroupDto> groups = studyGroupService.getMyGroups(currentUser);
+        List<StudyGroupDto> groups = studyGroupService.getMyOwnedGroups(currentUser);
+        return ResponseEntity.ok(groups);
+    }
+
+    /**
+     * 현재 사용자가 참여자로 있는 스터디 그룹 목록을 조회합니다.
+     *
+     * @return 사용자가 참여한 스터디 그룹 목록
+     */
+    @Operation(summary = "내가 참여한 스터디 그룹 목록 조회", description = "현재 로그인한 사용자가 참여자로 가입한 모든 스터디 그룹 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "참여 그룹 목록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    @GetMapping("/my-joined-groups")
+    public ResponseEntity<List<StudyGroupDto>> getMyJoinedGroups() {
+        User currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        List<StudyGroupDto> groups = studyGroupService.getMyJoinedGroups(currentUser);
         return ResponseEntity.ok(groups);
     }
 
@@ -244,32 +263,203 @@ public class StudyGroupController {
     }
 
     /**
-     * 스터디 그룹에 가입합니다.
+     * 스터디 그룹에 가입 신청합니다.
      *
-     * @param groupId 가입할 스터디 그룹 ID
-     * @return 가입 성공 여부
+     * @param groupId 가입 신청할 스터디 그룹 ID
+     * @return 가입 신청 성공 여부
      */
-    @Operation(summary = "스터디 그룹 가입", description = "현재 로그인한 사용자를 스터디 그룹에 멤버로 가입시킵니다.")
+    @Operation(summary = "스터디 그룹 가입 신청", description = "스터디 그룹에 가입 신청을 합니다. 그룹 생성자의 승인이 필요합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "그룹 가입 성공"),
-            @ApiResponse(responseCode = "400", description = "그룹 가입 실패 (최대 인원 초과 등)"),
+            @ApiResponse(responseCode = "200", description = "가입 신청 성공"),
+            @ApiResponse(responseCode = "400", description = "가입 신청 실패 (이미 가입됨, 최대 인원 초과 등)"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
     })
-    @PostMapping("/{groupId}/join")
-    public ResponseEntity<?> joinGroup(
+    @PostMapping("/{groupId}/apply")
+    public ResponseEntity<?> applyToGroup(
             @Parameter(description = "스터디 그룹 ID") @PathVariable Long groupId) {
         User currentUser = authService.getCurrentUser();
         if (currentUser == null) {
             return ResponseEntity.status(401).build();
         }
 
-        boolean success = studyGroupService.joinGroup(currentUser, groupId);
+        boolean success = studyGroupService.applyToGroup(currentUser, groupId);
         if (!success) {
-            return ResponseEntity.badRequest().body("Cannot join group");
+            return ResponseEntity.badRequest().body("Cannot apply to group");
         }
 
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * 스터디 그룹의 가입 대기 중인 멤버 목록을 조회합니다.
+     * 그룹 생성자만 조회 가능합니다.
+     *
+     * @param groupId 스터디 그룹 ID
+     * @return 가입 대기 멤버 목록
+     */
+    @Operation(summary = "가입 대기 멤버 목록 조회", description = "스터디 그룹의 가입 승인 대기 중인 멤버 목록을 조회합니다. 그룹 생성자만 조회 가능합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "가입 대기 멤버 목록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "403", description = "조회 권한 없음 (그룹 생성자만 가능)"),
+            @ApiResponse(responseCode = "404", description = "스터디 그룹을 찾을 수 없음")
+    })
+    @GetMapping("/{groupId}/pending-members")
+    public ResponseEntity<List<GroupMemberDto>> getPendingMembers(
+            @Parameter(description = "스터디 그룹 ID") @PathVariable Long groupId) {
+
+        User currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        PendingMembersResult result = studyGroupService.getPendingMembers(currentUser, groupId);
+
+        if (result.getError() != null) {
+            return switch (result.getError()) {
+                case GROUP_NOT_FOUND -> ResponseEntity.status(404).build();
+                case NOT_GROUP_OWNER -> ResponseEntity.status(403).build();
+                default -> ResponseEntity.status(400).build();
+            };
+        }
+
+        return ResponseEntity.ok(result.getPendingMembers());
+    }
+
+    /**
+     * 스터디 그룹 가입 신청을 승인합니다.
+     * 그룹 생성자만 사용 가능합니다.
+     *
+     * @param groupId 스터디 그룹 ID
+     * @param userId 승인할 사용자 ID
+     * @return 승인 성공 여부
+     */
+    @Operation(summary = "가입 신청 승인", description = "스터디 그룹 가입 신청을 승인합니다. 그룹 생성자만 사용 가능합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "가입 승인 성공"),
+            @ApiResponse(responseCode = "400", description = "승인 실패 (최대 인원 초과 등)"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "403", description = "권한 없음 (그룹 생성자만 가능)"),
+            @ApiResponse(responseCode = "404", description = "그룹, 사용자 또는 가입 신청을 찾을 수 없음")
+    })
+    @PostMapping("/{groupId}/members/{userId}/approve")
+    public ResponseEntity<?> approveMember(
+            @Parameter(description = "스터디 그룹 ID") @PathVariable Long groupId,
+            @Parameter(description = "승인할 사용자 ID") @PathVariable Long userId) {
+
+        User currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        MembershipActionResult result = studyGroupService.approveMember(currentUser, groupId, userId);
+
+        switch (result) {
+            case SUCCESS:
+                return ResponseEntity.ok().body("Member approved successfully");
+            case GROUP_NOT_FOUND:
+                return ResponseEntity.status(404).body("Group not found");
+            case USER_NOT_FOUND:
+                return ResponseEntity.status(404).body("User not found");
+            case NOT_GROUP_OWNER:
+                return ResponseEntity.status(403).body("Only group owner can approve members");
+            case MEMBER_NOT_PENDING:
+                return ResponseEntity.status(404).body("No pending application found");
+            case MAX_MEMBERS_EXCEEDED:
+                return ResponseEntity.status(400).body("Cannot approve: maximum members exceeded");
+            default:
+                return ResponseEntity.status(400).body("Failed to approve member");
+        }
+    }
+
+    /**
+     * 스터디 그룹 가입 신청을 거절합니다.
+     * 그룹 생성자만 사용 가능합니다.
+     *
+     * @param groupId 스터디 그룹 ID
+     * @param userId 거절할 사용자 ID
+     * @return 거절 성공 여부
+     */
+    @Operation(summary = "가입 신청 거절", description = "스터디 그룹 가입 신청을 거절합니다. 그룹 생성자만 사용 가능합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "가입 거절 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "403", description = "권한 없음 (그룹 생성자만 가능)"),
+            @ApiResponse(responseCode = "404", description = "그룹, 사용자 또는 가입 신청을 찾을 수 없음")
+    })
+    @PostMapping("/{groupId}/members/{userId}/reject")
+    public ResponseEntity<?> rejectMember(
+            @Parameter(description = "스터디 그룹 ID") @PathVariable Long groupId,
+            @Parameter(description = "거절할 사용자 ID") @PathVariable Long userId) {
+
+        User currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        MembershipActionResult result = studyGroupService.rejectMember(currentUser, groupId, userId);
+
+        switch (result) {
+            case SUCCESS:
+                return ResponseEntity.ok().body("Member rejected successfully");
+            case GROUP_NOT_FOUND:
+                return ResponseEntity.status(404).body("Group not found");
+            case USER_NOT_FOUND:
+                return ResponseEntity.status(404).body("User not found");
+            case NOT_GROUP_OWNER:
+                return ResponseEntity.status(403).body("Only group owner can reject members");
+            case MEMBER_NOT_PENDING:
+                return ResponseEntity.status(404).body("No pending application found");
+            default:
+                return ResponseEntity.status(400).body("Failed to reject member");
+        }
+    }
+
+    /**
+     * 스터디 그룹에서 특정 멤버를 추방합니다.
+     *
+     * @param groupId 스터디 그룹 ID
+     * @param userId 추방할 사용자 ID
+     * @return 추방 성공 여부
+     */
+    @Operation(summary = "스터디 그룹 멤버 추방", description = "그룹 생성자가 특정 멤버를 스터디 그룹에서 추방합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "멤버 추방 성공"),
+            @ApiResponse(responseCode = "400", description = "멤버 추방 실패 (생성자는 추방 불가)"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "403", description = "멤버 추방 권한 없음 (그룹 생성자만 가능)"),
+            @ApiResponse(responseCode = "404", description = "그룹 또는 멤버를 찾을 수 없음")
+    })
+    @DeleteMapping("/{groupId}/members/{userId}")
+    public ResponseEntity<?> kickMember(
+            @Parameter(description = "스터디 그룹 ID") @PathVariable Long groupId,
+            @Parameter(description = "추방할 사용자 ID") @PathVariable Long userId) {
+
+        User currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        KickMemberResult result = studyGroupService.kickMember(currentUser, groupId, userId);
+
+        switch (result) {
+            case SUCCESS:
+                return ResponseEntity.ok().body("Member kicked successfully");
+            case GROUP_NOT_FOUND:
+                return ResponseEntity.status(404).body("Group not found");
+            case USER_NOT_FOUND:
+                return ResponseEntity.status(404).body("User not found");
+            case NOT_GROUP_OWNER:
+                return ResponseEntity.status(403).body("Only group owner can kick members");
+            case CANNOT_KICK_OWNER:
+                return ResponseEntity.status(400).body("Cannot kick group owner");
+            case MEMBER_NOT_FOUND:
+                return ResponseEntity.status(404).body("Member not found in group");
+            default:
+                return ResponseEntity.status(400).body("Failed to kick member");
+        }
+    }
+
 
     /**
      * 스터디 그룹에서 탈퇴합니다.

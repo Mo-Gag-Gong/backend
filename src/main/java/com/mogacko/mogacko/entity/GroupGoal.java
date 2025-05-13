@@ -7,6 +7,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "group_goals")
@@ -31,9 +33,8 @@ public class GroupGoal {
     @Column(length = 100, nullable = false)
     private String title;
 
-    @Lob
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String description;
+    @OneToMany(mappedBy = "goal", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GroupGoalDetail> details = new ArrayList<>();
 
     private Integer pointValue;
 

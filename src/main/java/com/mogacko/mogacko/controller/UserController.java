@@ -3,6 +3,7 @@ package com.mogacko.mogacko.controller;
 import com.mogacko.mogacko.dto.InterestDto;
 import com.mogacko.mogacko.dto.ProfileUpdateRequest;
 import com.mogacko.mogacko.dto.UserProfileDto;
+import com.mogacko.mogacko.dto.UserProfileWithStatsDto;
 import com.mogacko.mogacko.entity.User;
 import com.mogacko.mogacko.entity.UserProfile;
 import com.mogacko.mogacko.repository.UserProfileRepository;
@@ -59,6 +60,35 @@ public class UserController {
         }
 
         return ResponseEntity.ok(profileDto);
+    }
+
+    /**
+     * 사용자 프로필을 조회합니다. 공개 프로필 정보와 통계 정보를 함께 반환합니다.
+     * 자신의 프로필인 경우 개인정보를 포함한 전체 정보를 반환합니다.
+     *
+     * @param userId 조회할 사용자 ID
+     * @return 사용자 프로필 및 통계 정보
+     */
+    @Operation(summary = "사용자 프로필 및 통계 조회", description = "사용자의 공개 프로필과 통계 정보를 조회합니다. 자신의 프로필은 개인정보를 포함한 전체 정보를 조회 가능합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "프로필 조회 성공",
+                    content = @Content(schema = @Schema(implementation = UserProfileWithStatsDto.class))),
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+    })
+    @GetMapping("/{userId}/profile")
+    public ResponseEntity<UserProfileWithStatsDto> getUserProfile(
+            @Parameter(description = "조회할 사용자 ID") @PathVariable Long userId) {
+
+        User currentUser = authService.getCurrentUser();
+        boolean isOwnProfile = currentUser != null && currentUser.getUserId().equals(userId);
+
+        UserProfileWithStatsDto profileWithStats = userService.getUserProfileWithStats(userId, isOwnProfile);
+
+        if (profileWithStats == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(profileWithStats);
     }
 
     /**

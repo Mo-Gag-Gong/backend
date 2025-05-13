@@ -1,14 +1,9 @@
 package com.mogacko.mogacko.service;
 
-import com.mogacko.mogacko.dto.GroupCreateRequest;
-import com.mogacko.mogacko.dto.GroupMemberDto;
-import com.mogacko.mogacko.dto.StudyGroupDto;
+import com.mogacko.mogacko.dto.*;
 import com.mogacko.mogacko.entity.*;
 import com.mogacko.mogacko.exception.ResourceNotFoundException;
-import com.mogacko.mogacko.repository.GroupMemberRepository;
-import com.mogacko.mogacko.repository.InterestRepository;
-import com.mogacko.mogacko.repository.StudyGroupRepository;
-import com.mogacko.mogacko.repository.UserProfileRepository;
+import com.mogacko.mogacko.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +25,7 @@ public class StudyGroupService {
     private final GroupMemberRepository groupMemberRepository;
     private final UserProfileRepository userProfileRepository;
     private final InterestRepository interestRepository;
+    private final UserRepository userRepository;
 
     public Page<StudyGroupDto> getAllGroups(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -61,10 +57,92 @@ public class StudyGroupService {
         });
     }
 
-    public List<StudyGroupDto> getMyGroups(User user) {
-        List<StudyGroup> userGroups = groupMemberRepository.findUserGroups(user);
+    /**
+     * 스터디 그룹에서 특정 멤버를 추방합니다.
+     *
+     * @param currentUser 현재 사용자 (그룹 생성자여야 함)
+     * @param groupId 스터디 그룹 ID
+     * @param userId 추방할 사용자 ID
+     * @return 추방 결과
+     */
+    @Transactional
+    public KickMemberResult kickMember(User currentUser, Long groupId, Long userId) {
+        // 1. 그룹 존재 여부 확인
+        Optional<StudyGroup> groupOpt = studyGroupRepository.findById(groupId);
+        if (groupOpt.isEmpty()) {
+            return KickMemberResult.GROUP_NOT_FOUND;
+        }
 
-        return userGroups.stream()
+        StudyGroup group = groupOpt.get();
+
+        // 2. 현재 사용자가 그룹 생성자인지 확인
+        if (!group.getCreator().getUserId().equals(currentUser.getUserId())) {
+            return KickMemberResult.NOT_GROUP_OWNER;
+        }
+
+        // 3. 추방할 사용자 존재 여부 확인
+        Optional<User> targetUserOpt = userRepository.findById(userId);
+        if (targetUserOpt.isEmpty()) {
+            return KickMemberResult.USER_NOT_FOUND;
+        }
+
+        User targetUser = targetUserOpt.get();
+
+        // 4. 그룹 생성자는 추방할 수 없음
+        if (group.getCreator().getUserId().equals(targetUser.getUserId())) {
+            return KickMemberResult.CANNOT_KICK_OWNER;
+        }
+
+        // 5. 대상 사용자가 그룹 멤버인지 확인
+        Optional<GroupMember> memberOpt = groupMemberRepository.findByGroupAndUser(group, targetUser);
+        if (memberOpt.isEmpty()) {
+            return KickMemberResult.MEMBER_NOT_FOUND;
+        }
+
+        GroupMember member = memberOpt.get();
+
+        // 6. 이미 탈퇴한 멤버인지 확인
+        if (!"ACTIVE".equals(member.getStatus())) {
+            return KickMemberResult.MEMBER_NOT_FOUND;
+        }
+
+        // 7. 멤버 상태를 KICKED로 변경
+        member.setStatus("KICKED");
+        groupMemberRepository.save(member);
+
+        return KickMemberResult.SUCCESS;
+    }
+
+    /**
+     * 사용자가 그룹장(생성자)인 스터디 그룹 목록을 조회합니다.
+     *
+     * @param user 현재 사용자
+     * @return 사용자가 그룹장인 스터디 그룹 목록
+     */
+    public List<StudyGroupDto> getMyOwnedGroups(User user) {
+        List<StudyGroup> ownedGroups = studyGroupRepository.findByCreator(user);
+
+        return ownedGroups.stream()
+                .filter(StudyGroup::getIsActive) // 활성 그룹만 조회
+                .map(group -> {
+                    int currentMembers = groupMemberRepository.countActiveMembers(group);
+                    return mapToGroupDto(group, currentMembers);
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 사용자가 참여자로 있는 스터디 그룹 목록을 조회합니다.
+     *
+     * @param user 현재 사용자
+     * @return 사용자가 참여한 스터디 그룹 목록
+     */
+    public List<StudyGroupDto> getMyJoinedGroups(User user) {
+        List<StudyGroup> joinedGroups = groupMemberRepository.findUserGroups(user);
+
+        return joinedGroups.stream()
+                .filter(group -> !group.getCreator().getUserId().equals(user.getUserId())) // 그룹장인 경우 제외
+                .filter(StudyGroup::getIsActive) // 활성 그룹만 조회
                 .map(group -> {
                     int currentMembers = groupMemberRepository.countActiveMembers(group);
                     return mapToGroupDto(group, currentMembers);
@@ -188,8 +266,40 @@ public class StudyGroupService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 스터디 그룹의 가입 대기 멤버 목록을 조회합니다.
+     *
+     * @param currentUser 현재 사용자 (그룹 생성자여야 함)
+     * @param groupId 스터디 그룹 ID
+     * @return 가입 대기 멤버 목록 결과
+     */
+    public PendingMembersResult getPendingMembers(User currentUser, Long groupId) {
+        // 1. 그룹 존재 여부 확인
+        Optional<StudyGroup> groupOpt = studyGroupRepository.findById(groupId);
+        if (groupOpt.isEmpty()) {
+            return PendingMembersResult.error(PendingMembersError.GROUP_NOT_FOUND);
+        }
+
+        StudyGroup group = groupOpt.get();
+
+        // 2. 현재 사용자가 그룹 생성자인지 확인
+        if (!group.getCreator().getUserId().equals(currentUser.getUserId())) {
+            return PendingMembersResult.error(PendingMembersError.NOT_GROUP_OWNER);
+        }
+
+        // 3. 가입 대기 상태의 멤버 조회
+        List<GroupMember> pendingMembers = groupMemberRepository.findByGroupAndStatus(group, "PENDING");
+
+        // 4. DTO로 변환
+        List<GroupMemberDto> pendingMemberDtos = pendingMembers.stream()
+                .map(this::mapToMemberDto)
+                .collect(Collectors.toList());
+
+        return PendingMembersResult.success(pendingMemberDtos);
+    }
+
     @Transactional
-    public boolean joinGroup(User user, Long groupId) {
+    public boolean applyToGroup(User user, Long groupId) {
         Optional<StudyGroup> groupOpt = studyGroupRepository.findById(groupId);
 
         if (groupOpt.isEmpty()) {
@@ -206,15 +316,25 @@ public class StudyGroupService {
 
             // 이미 활성 멤버면 무시
             if ("ACTIVE".equals(existingMember.getStatus())) {
-                return true;
+                return false;
             }
 
-            // 탈퇴했던 멤버면 상태 업데이트
-            existingMember.setStatus("ACTIVE");
+            // 이미 활성 멤버면 무시
+            if ("KICKED".equals(existingMember.getStatus())) {
+                return false;
+            }
+
+            // 이미 대기 중이면 무시
+            if ("PENDING".equals(existingMember.getStatus())) {
+                return false;
+            }
+
+            // 탈퇴했거나 추방당했던 멤버면 대기 상태로 변경
+            existingMember.setStatus("PENDING");
             existingMember.setJoinDate(LocalDate.now());
             groupMemberRepository.save(existingMember);
         } else {
-            // 현재 인원 확인
+            // 현재 인원 확인 (가입 대기 멤버는 인원 수에 포함하지 않음)
             int currentMembers = groupMemberRepository.countActiveMembers(group);
 
             // 최대 인원 초과 체크
@@ -222,18 +342,121 @@ public class StudyGroupService {
                 return false;
             }
 
-            // 새 멤버 추가
+            // 새 멤버 추가 (가입 대기 상태로)
             GroupMember newMember = GroupMember.builder()
                     .group(group)
                     .user(user)
                     .joinDate(LocalDate.now())
-                    .status("ACTIVE")
+                    .status("PENDING")
                     .build();
 
             groupMemberRepository.save(newMember);
         }
 
         return true;
+    }
+
+    /**
+     * 가입 신청을 승인합니다.
+     *
+     * @param currentUser 현재 사용자 (그룹 생성자여야 함)
+     * @param groupId 스터디 그룹 ID
+     * @param userId 승인할 사용자 ID
+     * @return 처리 결과
+     */
+    @Transactional
+    public MembershipActionResult approveMember(User currentUser, Long groupId, Long userId) {
+        // 1. 그룹 존재 여부 확인
+        Optional<StudyGroup> groupOpt = studyGroupRepository.findById(groupId);
+        if (groupOpt.isEmpty()) {
+            return MembershipActionResult.GROUP_NOT_FOUND;
+        }
+
+        StudyGroup group = groupOpt.get();
+
+        // 2. 현재 사용자가 그룹 생성자인지 확인
+        if (!group.getCreator().getUserId().equals(currentUser.getUserId())) {
+            return MembershipActionResult.NOT_GROUP_OWNER;
+        }
+
+        // 3. 승인할 사용자 존재 여부 확인
+        Optional<User> targetUserOpt = userRepository.findById(userId);
+        if (targetUserOpt.isEmpty()) {
+            return MembershipActionResult.USER_NOT_FOUND;
+        }
+
+        User targetUser = targetUserOpt.get();
+
+        // 4. 가입 신청 상태인지 확인
+        Optional<GroupMember> memberOpt = groupMemberRepository.findByGroupAndUser(group, targetUser);
+        if (memberOpt.isEmpty() || !"PENDING".equals(memberOpt.get().getStatus())) {
+            return MembershipActionResult.MEMBER_NOT_PENDING;
+        }
+
+        GroupMember member = memberOpt.get();
+
+        // 5. 현재 활성 멤버 수 확인
+        int currentMembers = groupMemberRepository.countActiveMembers(group);
+
+        // 6. 최대 인원 초과 체크
+        if (group.getMaxMembers() != null && currentMembers >= group.getMaxMembers()) {
+            return MembershipActionResult.MAX_MEMBERS_EXCEEDED;
+        }
+
+        // 7. 멤버 상태를 ACTIVE로 변경
+        member.setStatus("ACTIVE");
+        member.setJoinDate(LocalDate.now()); // 승인 날짜로 갱신
+        groupMemberRepository.save(member);
+
+        return MembershipActionResult.SUCCESS;
+    }
+
+    /**
+     * 가입 신청을 거절합니다.
+     *
+     * @param currentUser 현재 사용자 (그룹 생성자여야 함)
+     * @param groupId 스터디 그룹 ID
+     * @param userId 거절할 사용자 ID
+     * @return 처리 결과
+     */
+    @Transactional
+    public MembershipActionResult rejectMember(User currentUser, Long groupId, Long userId) {
+        // 1. 그룹 존재 여부 확인
+        Optional<StudyGroup> groupOpt = studyGroupRepository.findById(groupId);
+        if (groupOpt.isEmpty()) {
+            return MembershipActionResult.GROUP_NOT_FOUND;
+        }
+
+        StudyGroup group = groupOpt.get();
+
+        // 2. 현재 사용자가 그룹 생성자인지 확인
+        if (!group.getCreator().getUserId().equals(currentUser.getUserId())) {
+            return MembershipActionResult.NOT_GROUP_OWNER;
+        }
+
+        // 3. 거절할 사용자 존재 여부 확인
+        Optional<User> targetUserOpt = userRepository.findById(userId);
+        if (targetUserOpt.isEmpty()) {
+            return MembershipActionResult.USER_NOT_FOUND;
+        }
+
+        User targetUser = targetUserOpt.get();
+
+        // 4. 가입 신청 상태인지 확인
+        Optional<GroupMember> memberOpt = groupMemberRepository.findByGroupAndUser(group, targetUser);
+        if (memberOpt.isEmpty() || !"PENDING".equals(memberOpt.get().getStatus())) {
+            return MembershipActionResult.MEMBER_NOT_PENDING;
+        }
+
+        GroupMember member = memberOpt.get();
+
+        // 5. 가입 신청 삭제 (또는 상태를 REJECTED로 변경)
+        groupMemberRepository.delete(member);
+        // 또는 거절 이력을 남기고 싶다면:
+        // member.setStatus("REJECTED");
+        // groupMemberRepository.save(member);
+
+        return MembershipActionResult.SUCCESS;
     }
 
     @Transactional

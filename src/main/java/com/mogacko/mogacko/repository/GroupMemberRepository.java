@@ -21,4 +21,6 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
 
     @Query("SELECT gm.group FROM GroupMember gm WHERE gm.user = :user AND gm.status = 'ACTIVE'")
     List<StudyGroup> findUserGroups(User user);
+
+    List<GroupMember> findByGroupAndStatus(StudyGroup group, String status);
 }

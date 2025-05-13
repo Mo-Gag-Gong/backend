@@ -1,9 +1,7 @@
 // src/main/java/com/mogacko/mogacko/service/UserService.java
 package com.mogacko.mogacko.service;
 
-import com.mogacko.mogacko.dto.InterestDto;
-import com.mogacko.mogacko.dto.ProfileUpdateRequest;
-import com.mogacko.mogacko.dto.UserProfileDto;
+import com.mogacko.mogacko.dto.*;
 import com.mogacko.mogacko.entity.Interest;
 import com.mogacko.mogacko.entity.User;
 import com.mogacko.mogacko.entity.UserInterest;
@@ -28,10 +26,104 @@ public class UserService {
     private final InterestRepository interestRepository;
     private final UserRepository userRepository;
     private final UserInterestRepository userInterestRepository;
+    private final UserStatisticsService statisticsService;
 
     public UserProfileDto getUserProfile(User user) {
         Optional<UserProfile> profileOpt = userProfileRepository.findByUser(user);
 
+        if (profileOpt.isEmpty()) {
+            return null;
+        }
+
+        UserProfile profile = profileOpt.get();
+        UserProfileDto dto = mapToProfileDto(profile);
+
+        // 관심사 추가
+        List<Interest> userInterests = userInterestRepository.findUserInterests(user);
+        dto.setInterests(userInterests.stream()
+                .map(interest -> new InterestDto(interest.getInterestId(), interest.getInterestName()))
+                .collect(Collectors.toList()));
+
+        return dto;
+    }
+
+    /**
+     * 사용자의 프로필과 통계 정보를 함께 조회합니다.
+     *
+     * @param userId 조회할 사용자 ID
+     * @param isOwnProfile 자신의 프로필인지 여부
+     * @return 프로필 및 통계 정보
+     */
+    public UserProfileWithStatsDto getUserProfileWithStats(Long userId, boolean isOwnProfile) {
+        // 사용자 조회
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            return null;
+        }
+
+        User user = userOpt.get();
+
+        // 프로필 조회
+        Optional<UserProfile> profileOpt = userProfileRepository.findByUser(user);
+        if (profileOpt.isEmpty()) {
+            return null;
+        }
+
+        UserProfile profile = profileOpt.get();
+
+        // 관심사 조회
+        List<Interest> userInterests = userInterestRepository.findUserInterests(user);
+        List<InterestDto> interestDtos = userInterests.stream()
+                .map(interest -> new InterestDto(interest.getInterestId(), interest.getInterestName()))
+                .collect(Collectors.toList());
+
+        // 통계 정보 조회
+        UserStatisticsDto statistics = statisticsService.getUserStatistics(user);
+
+        // DTO 구성
+        UserProfileWithStatsDto.UserProfileWithStatsDtoBuilder builder = UserProfileWithStatsDto.builder()
+                .userId(user.getUserId())
+                .name(profile.getName())
+                .profileImage(user.getProfileImage())
+                .interests(interestDtos)
+                .isOwnProfile(isOwnProfile);
+
+        // 자신의 프로필인 경우에만 개인정보 포함
+        if (isOwnProfile) {
+            builder.email(user.getEmail())
+                    .gender(profile.getGender())
+                    .phoneNumber(profile.getPhoneNumber())
+                    .birthYear(profile.getBirthYear());
+        }
+
+        // 통계 정보 추가
+        if (statistics != null) {
+            builder.groupParticipationCount(statistics.getGroupParticipationCount())
+                    .attendanceRate(statistics.getAttendanceRate())
+                    .totalStudySessions(statistics.getTotalStudySessions())
+                    .statsLastUpdated(statistics.getLastUpdated());
+        }
+
+        return builder.build();
+    }
+
+    /**
+     * 특정 사용자 ID로 프로필 정보를 조회합니다.
+     *
+     * @param userId 조회할 사용자 ID
+     * @return 사용자 프로필 정보
+     */
+    public UserProfileDto getUserProfileById(Long userId) {
+        // 사용자 조회
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            return null;
+        }
+
+        User user = userOpt.get();
+
+        // 프로필 조회
+        Optional<UserProfile> profileOpt = userProfileRepository.findByUser(user);
         if (profileOpt.isEmpty()) {
             return null;
         }
