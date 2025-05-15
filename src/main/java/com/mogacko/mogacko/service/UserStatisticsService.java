@@ -4,6 +4,7 @@ import com.mogacko.mogacko.dto.UserStatisticsDto;
 import com.mogacko.mogacko.entity.User;
 import com.mogacko.mogacko.entity.UserStatistics;
 import com.mogacko.mogacko.repository.GroupMemberRepository;
+import com.mogacko.mogacko.repository.MeetingParticipantRepository;
 import com.mogacko.mogacko.repository.UserStatisticsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ public class UserStatisticsService {
 
     private final UserStatisticsRepository statisticsRepository;
     private final GroupMemberRepository memberRepository;
-    private final AttendanceRepository attendanceRepository;
+    private final MeetingParticipantRepository meetingParticipantRepository;
 
     public UserStatisticsDto getUserStatistics(User user) {
         Optional<UserStatistics> statsOpt = statisticsRepository.findByUser(user);
@@ -38,7 +39,7 @@ public class UserStatisticsService {
                 .user(user)
                 .groupParticipationCount(0)
                 .attendanceRate(0.0)
-                .totalStudySessions(0)
+                .totalMeetings(0)
                 .lastUpdated(LocalDateTime.now())
                 .build();
 
@@ -58,18 +59,23 @@ public class UserStatisticsService {
             stats.setUser(user);
         }
 
-        // 참여 그룹 수 계산
-        int groupParticipationCount = memberRepository.findByUser(user).size();
+        // 참여 그룹 수 계산 (활성 상태인 그룹만)
+        int groupParticipationCount = memberRepository.countActiveGroupsByUser(user);
         stats.setGroupParticipationCount(groupParticipationCount);
 
-        // 출석율 계산 (구현 예시)
-        int attendanceCount = attendanceRepository.countUserAttendance(user);
-        double attendanceRate = groupParticipationCount > 0 ?
-                (double) attendanceCount / groupParticipationCount * 100 : 0;
+        // 전체 참가한 모임 수 계산
+        int totalParticipatedMeetings = meetingParticipantRepository.countByUser(user);
+
+        // 출석한 모임 수 계산
+        int attendedMeetings = meetingParticipantRepository.countAttendedByUser(user);
+
+        // 출석율 계산
+        double attendanceRate = totalParticipatedMeetings > 0 ?
+                (double) attendedMeetings / totalParticipatedMeetings * 100 : 0;
         stats.setAttendanceRate(attendanceRate);
 
-        // 총 스터디 세션 수
-        stats.setTotalMeetings(attendanceCount);
+        // 총 모임 수
+        stats.setTotalMeetings(totalParticipatedMeetings);
 
         // 최종 업데이트 시간
         stats.setLastUpdated(LocalDateTime.now());
@@ -84,7 +90,7 @@ public class UserStatisticsService {
                 .userId(stats.getUser().getUserId())
                 .groupParticipationCount(stats.getGroupParticipationCount())
                 .attendanceRate(stats.getAttendanceRate())
-                .totalStudySessions(stats.getTotalMeetings())
+                .totalMeetings(stats.getTotalMeetings()) // 수정된 필드명
                 .lastUpdated(stats.getLastUpdated())
                 .build();
     }

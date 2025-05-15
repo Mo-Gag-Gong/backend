@@ -1,3 +1,4 @@
+// src/main/java/com/mogacko/mogacko/dto/UserStatisticsDto.java
 package com.mogacko.mogacko.dto;
 
 import lombok.AllArgsConstructor;
@@ -16,6 +17,6 @@ public class UserStatisticsDto {
     private Long userId;
     private Integer groupParticipationCount;
     private Double attendanceRate;
-    private Integer totalStudySessions;
+    private Integer totalMeetings; // totalStudySessions → totalMeetings로 변경
     private LocalDateTime lastUpdated;
 }

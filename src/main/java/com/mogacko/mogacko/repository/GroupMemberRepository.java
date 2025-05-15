@@ -5,6 +5,7 @@ import com.mogacko.mogacko.entity.StudyGroup;
 import com.mogacko.mogacko.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,4 +24,6 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
     List<StudyGroup> findUserGroups(User user);
 
     List<GroupMember> findByGroupAndStatus(StudyGroup group, String status);
+    @Query("SELECT COUNT(gm) FROM GroupMember gm WHERE gm.user = :user AND gm.status = 'ACTIVE'")
+    int countActiveGroupsByUser(@Param("user") User user);
 }
