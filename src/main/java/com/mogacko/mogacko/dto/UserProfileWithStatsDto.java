@@ -26,7 +26,7 @@ public class UserProfileWithStatsDto {
     // 통계 정보
     private Integer groupParticipationCount;
     private Double attendanceRate;
-    private Integer totalStudySessions;
+    private Integer totalMeetings;
     private LocalDateTime statsLastUpdated;
 
     // 추가 정보

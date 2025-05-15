@@ -73,10 +73,11 @@ public class GroupGoalService {
                 .title(request.getTitle())
                 .pointValue(request.getPointValue())
                 .endDate(request.getEndDate())
+                .details(new ArrayList<>()) // 빈 리스트로 초기화
                 .build();
 
         GroupGoal savedGoal = goalRepository.save(newGoal);
-// src/main/java/com/mogacko/mogacko/service/GroupGoalService.java (계속)
+
         // 세부 목표 추가
         if (request.getDetails() != null && !request.getDetails().isEmpty()) {
             for (String detailDescription : request.getDetails()) {
@@ -86,11 +87,12 @@ public class GroupGoalService {
                         .isCompleted(false)
                         .build();
 
+                savedGoal.getDetails().add(detail); // 연관관계 설정
                 detailRepository.save(detail);
             }
         }
 
-        return mapToGoalDto(goalRepository.findById(savedGoal.getGoalId()).orElse(savedGoal));
+        return mapToGoalDto(savedGoal);
     }
 
     @Transactional

@@ -27,8 +27,9 @@ public class StudyGroup {
     @Column(length = 100, nullable = false)
     private String title;
 
-    @Column(length = 50, nullable = false)
-    private Long interestId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "interest_id", nullable = false)
+    private Interest interest;
 
     @Lob
     @Column(columnDefinition = "TEXT")

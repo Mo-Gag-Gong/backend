@@ -16,7 +16,7 @@ public interface StudyGroupRepository extends JpaRepository<StudyGroup, Long> {
     @Query("SELECT sg FROM StudyGroup sg WHERE sg.isActive = true")
     Page<StudyGroup> findActiveGroups(Pageable pageable);
 
-    @Query("SELECT sg FROM StudyGroup sg JOIN Interest interest WHERE sg.isActive = true AND interest.interestName = :category")
+    @Query("SELECT sg FROM StudyGroup sg JOIN Interest i ON sg.interestId = i.interestId WHERE sg.isActive = true AND i.interestName = :category")
     Page<StudyGroup> findActiveGroupsByInterestName(@Param("category") String category, Pageable pageable);
 
     // LOWER 함수 사용 방식 수정
