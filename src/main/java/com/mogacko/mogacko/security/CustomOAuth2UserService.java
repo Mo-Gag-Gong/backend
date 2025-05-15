@@ -103,7 +103,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 UserProfile profile = UserProfile.builder()
                         .user(savedUser)
                         .name(attributes.getName())
-                        .mentorScore(0)
                         .onboardingCompleted(false)
                         .build();
 
@@ -118,7 +117,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                         .user(savedUser)
                         .groupParticipationCount(0)
                         .attendanceRate(0.0)
-                        .totalStudySessions(0)
+                        .totalMeetings(0)
                         .lastUpdated(LocalDateTime.now())
                         .build();
 
