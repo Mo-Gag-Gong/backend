@@ -26,7 +26,8 @@ public class UserStatistics {
 
     private Double attendanceRate;
 
-    private Integer totalStudySessions;
+    @Column(name = "total_meetings") // 필드명 변경
+    private Integer totalMeetings;
 
     @UpdateTimestamp
     private LocalDateTime lastUpdated;

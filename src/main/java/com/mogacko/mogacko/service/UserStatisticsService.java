@@ -69,7 +69,7 @@ public class UserStatisticsService {
         stats.setAttendanceRate(attendanceRate);
 
         // 총 스터디 세션 수
-        stats.setTotalStudySessions(attendanceCount);
+        stats.setTotalMeetings(attendanceCount);
 
         // 최종 업데이트 시간
         stats.setLastUpdated(LocalDateTime.now());
@@ -84,7 +84,7 @@ public class UserStatisticsService {
                 .userId(stats.getUser().getUserId())
                 .groupParticipationCount(stats.getGroupParticipationCount())
                 .attendanceRate(stats.getAttendanceRate())
-                .totalStudySessions(stats.getTotalStudySessions())
+                .totalStudySessions(stats.getTotalMeetings())
                 .lastUpdated(stats.getLastUpdated())
                 .build();
     }
