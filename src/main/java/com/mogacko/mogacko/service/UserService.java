@@ -100,7 +100,7 @@ public class UserService {
         if (statistics != null) {
             builder.groupParticipationCount(statistics.getGroupParticipationCount())
                     .attendanceRate(statistics.getAttendanceRate())
-                    .totalStudySessions(statistics.getTotalStudySessions())
+                    .totalStudySessions(statistics.getTotalMeetings())
                     .statsLastUpdated(statistics.getLastUpdated());
         }
 
