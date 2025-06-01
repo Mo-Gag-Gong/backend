@@ -170,11 +170,9 @@ public class StudyGroupService {
         StudyGroup newGroup = StudyGroup.builder()
                 .creator(user)
                 .title(request.getTitle())
-                .interestId(requestInterest.getInterestId())
+                .interest(requestInterest)
                 .description(request.getDescription())
                 .locationName(request.getLocationName())
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
                 .maxMembers(request.getMaxMembers())
                 .requirements(request.getRequirements())
                 .isActive(true)
@@ -215,7 +213,7 @@ public class StudyGroupService {
 
         // 그룹 정보 업데이트
         group.setTitle(request.getTitle());
-        group.setInterestId(requestInterest.getInterestId());
+        group.setInterest(requestInterest);
         group.setDescription(request.getDescription());
         group.setLocationName(request.getLocationName());
         group.setStartDate(request.getStartDate());
@@ -496,13 +494,12 @@ public class StudyGroupService {
             creatorName = creatorProfile.get().getName();
         }
 
-        Interest findedInterest = interestRepository.findById(group.getInterestId()).orElseThrow(()->new ResourceNotFoundException("해당 관심사 객체를 찾을 수 없습니다."));
         return StudyGroupDto.builder()
                 .groupId(group.getGroupId())
                 .creatorId(group.getCreator().getUserId())
                 .creatorName(creatorName)
                 .title(group.getTitle())
-                .interestName(findedInterest.getInterestName())
+                .interestName(group.getInterest().getInterestName())
                 .description(group.getDescription())
                 .locationName(group.getLocationName())
                 .startDate(group.getStartDate())

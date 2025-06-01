@@ -34,6 +34,7 @@ public class GroupGoal {
     private String title;
 
     @OneToMany(mappedBy = "goal", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<GroupGoalDetail> details = new ArrayList<>();
 
     private Integer pointValue;

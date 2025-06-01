@@ -38,10 +38,6 @@ public class StudyGroup {
     @Column(length = 100)
     private String locationName;
 
-    private LocalDate startDate;
-
-    private LocalDate endDate;
-
     private Integer maxMembers;
 
     @Lob

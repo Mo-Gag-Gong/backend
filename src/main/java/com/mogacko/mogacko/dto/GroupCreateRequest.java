@@ -14,8 +14,6 @@ public class GroupCreateRequest {
     private String interest;
     private String description;
     private String locationName;
-    private LocalDate startDate;
-    private LocalDate endDate;
     private Integer maxMembers;
     private String requirements;
 }
