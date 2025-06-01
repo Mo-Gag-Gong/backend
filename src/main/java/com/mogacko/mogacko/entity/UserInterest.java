@@ -27,5 +27,6 @@ public class UserInterest {
     private Interest interest;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 }

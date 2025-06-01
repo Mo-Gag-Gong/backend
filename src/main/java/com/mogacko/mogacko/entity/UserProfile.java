@@ -40,8 +40,10 @@ public class UserProfile {
     private Boolean onboardingCompleted = false; // 추가 정보 입력 완료 여부
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }

@@ -19,6 +19,7 @@ public class GroupGoalDto {
     private String creatorName;
     private String title;
     private Integer pointValue;
+    private LocalDate startDate;
     private LocalDate endDate;
     private List<GoalDetailDto> details;
     private Integer completedCount;

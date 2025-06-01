@@ -17,16 +17,20 @@ import java.time.LocalDateTime;
 public class Interest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "interest_id")
     private Long interestId;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 50, name = "interest_name", nullable = false)
     private String interestName;
 
+    @Column(name = "is_active")
     private Boolean isActive;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }

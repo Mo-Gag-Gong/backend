@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 public class MeetingParticipant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "participant_id")
     private Long participantId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -29,8 +30,10 @@ public class MeetingParticipant {
     @Column(length = 20)
     private String status; // REGISTERED, ATTENDED, ABSENT
 
+    @Column(name = "check_in_time")
     private LocalDateTime checkInTime;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 }

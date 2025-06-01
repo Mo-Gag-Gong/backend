@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 public class GroupChat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "chat_id")
     private Long chatId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -25,8 +26,9 @@ public class GroupChat {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(name = "message", columnDefinition = "TEXT", nullable = false)
     private String message;
 
+    @Column(name = "sent_at")
     private LocalDateTime sentAt;
 }

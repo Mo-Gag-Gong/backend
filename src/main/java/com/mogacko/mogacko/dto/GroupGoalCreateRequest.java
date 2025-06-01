@@ -13,6 +13,7 @@ import java.util.List;
 public class GroupGoalCreateRequest {
     private String title;
     private Integer pointValue;
+    private LocalDate startDate;
     private LocalDate endDate;
     private List<String> details;
 }

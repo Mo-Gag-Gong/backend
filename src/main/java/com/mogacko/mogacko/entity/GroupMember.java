@@ -27,11 +27,13 @@ public class GroupMember {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(name = "join_date")
     private LocalDate joinDate;
 
     @Column(length = 20)
     private String status;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 }

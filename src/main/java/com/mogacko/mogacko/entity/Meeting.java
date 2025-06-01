@@ -18,30 +18,32 @@ import java.time.LocalDateTime;
 public class Meeting {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "meeting_id")
     private Long meetingId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
     private StudyGroup group;
 
-    @Column(length = 255, nullable = false)
+    @Column(name = "title", length = 255, nullable = false)
     private String title;
 
-    @Column(length = 255, nullable = false)
+    @Column(name = "location", length = 255, nullable = false)
     private String location;
 
-    @Column(precision = 10, scale = 8)
+    @Column(name = "latitude", precision = 10, scale = 8)
     private BigDecimal latitude;
 
-    @Column(precision = 11, scale = 8)
+    @Column(name = "longitude", precision = 11, scale = 8)
     private BigDecimal longitude;
 
-    @Column(nullable = false)
+    @Column(name = "meeting_date", nullable = false)
     private LocalDateTime meetingDate;
 
+    @Column(name = "max_participants")
     private Integer maxParticipants;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -49,8 +51,10 @@ public class Meeting {
     private User createdBy;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }

@@ -18,35 +18,40 @@ import java.time.LocalDateTime;
 public class StudyGroup {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "group_id")
     private Long groupId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
 
-    @Column(length = 100, nullable = false)
+    @Column(name = "title", length = 100, nullable = false)
     private String title;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "interest_id", nullable = false)
     private Interest interest;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(length = 100)
+    @Column(name = "location_name", length = 100)
     private String locationName;
 
+    @Column(name = "max_members")
     private Integer maxMembers;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "requirements", columnDefinition = "TEXT")
     private String requirements;
 
+    @Column(name = "is_active")
     private Boolean isActive;
 
     @CreationTimestamp
+    @Column(name = "created_at")  // 명시적 지정
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")  // 명시적 지정
     private LocalDateTime updatedAt;
 }

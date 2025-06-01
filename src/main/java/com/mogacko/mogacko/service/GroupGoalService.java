@@ -72,6 +72,7 @@ public class GroupGoalService {
                 .creator(user)
                 .title(request.getTitle())
                 .pointValue(request.getPointValue())
+                .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .details(new ArrayList<>()) // 빈 리스트로 초기화
                 .build();
@@ -113,6 +114,7 @@ public class GroupGoalService {
 
         goal.setTitle(request.getTitle());
         goal.setPointValue(request.getPointValue());
+        goal.setStartDate(request.getStartDate());
         goal.setEndDate(request.getEndDate());
 
         GroupGoal updatedGoal = goalRepository.save(goal);
@@ -224,6 +226,7 @@ public class GroupGoalService {
                 .creatorName(creatorName)
                 .title(goal.getTitle())
                 .pointValue(goal.getPointValue())
+                .startDate(goal.getStartDate())
                 .endDate(goal.getEndDate())
                 .details(detailDtos)
                 .completedCount(completedCount)

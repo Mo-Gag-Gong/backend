@@ -20,6 +20,7 @@ import java.util.List;
 public class GroupGoal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "goal_id")
     private Long goalId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -37,13 +38,20 @@ public class GroupGoal {
     @Builder.Default
     private List<GroupGoalDetail> details = new ArrayList<>();
 
+    @Column(name = "point_value")
     private Integer pointValue;
 
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
     private LocalDate endDate;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }

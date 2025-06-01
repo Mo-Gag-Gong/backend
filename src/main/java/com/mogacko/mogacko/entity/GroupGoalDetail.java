@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 public class GroupGoalDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "detail_id")
     private Long detailId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -26,12 +27,14 @@ public class GroupGoalDetail {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
-    @Column(nullable = false)
+    @Column(name="is_completed", nullable = false)
     private Boolean isCompleted = false;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
