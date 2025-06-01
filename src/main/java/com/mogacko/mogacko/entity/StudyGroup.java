@@ -31,7 +31,6 @@ public class StudyGroup {
     @JoinColumn(name = "interest_id", nullable = false)
     private Interest interest;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -40,7 +39,6 @@ public class StudyGroup {
 
     private Integer maxMembers;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String requirements;
 

@@ -25,7 +25,6 @@ public class GroupChat {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Lob
     @Column(columnDefinition = "TEXT", nullable = false)
     private String message;
 
