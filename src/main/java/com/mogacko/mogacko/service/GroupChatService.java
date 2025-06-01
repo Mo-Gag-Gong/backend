@@ -65,7 +65,7 @@ public class GroupChatService {
 
         GroupChat newChat = GroupChat.builder()
                 .group(group)
-                .user(user)
+                .sender(user)
                 .message(request.getMessage())
                 .sentAt(LocalDateTime.now())
                 .build();
@@ -80,18 +80,18 @@ public class GroupChatService {
         String profileImage = "";
 
         // 사용자 프로필 정보 조회
-        Optional<UserProfile> userProfileOpt = userProfileRepository.findByUser(chat.getUser());
+        Optional<UserProfile> userProfileOpt = userProfileRepository.findByUser(chat.getSender());
         if (userProfileOpt.isPresent()) {
             userName = userProfileOpt.get().getName();
         }
 
         // 프로필 이미지 조회
-        profileImage = chat.getUser().getProfileImage();
+        profileImage = chat.getSender().getProfileImage();
 
         return GroupChatDto.builder()
                 .chatId(chat.getChatId())
                 .groupId(chat.getGroup().getGroupId())
-                .userId(chat.getUser().getUserId())
+                .senderId(chat.getSender().getUserId())
                 .userName(userName)
                 .profileImage(profileImage)
                 .message(chat.getMessage())

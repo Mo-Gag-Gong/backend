@@ -23,12 +23,13 @@ public class GroupChat {
     private StudyGroup group;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "sender_id", nullable = false)
+    private User sender;
 
     @Column(name = "message", columnDefinition = "TEXT", nullable = false)
     private String message;
 
     @Column(name = "sent_at")
-    private LocalDateTime sentAt;
+    @Builder.Default
+    private LocalDateTime sentAt = LocalDateTime.now(); // 기본값 설정
 }

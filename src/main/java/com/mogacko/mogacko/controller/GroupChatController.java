@@ -42,7 +42,7 @@ public class GroupChatController {
     @GetMapping
     public ResponseEntity<Page<GroupChatDto>> getGroupChats(
             @Parameter(description = "스터디 그룹 ID") @PathVariable Long groupId,
-            @Parameter(description = "페이지 번호 (1부터 시작)") @RequestParam(defaultValue = "1") int page,
+            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size) {
 
         Page<GroupChatDto> chats = chatService.getGroupChats(groupId, page, size);

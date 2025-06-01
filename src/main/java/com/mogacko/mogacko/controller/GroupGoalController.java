@@ -74,7 +74,7 @@ public class GroupGoalController {
      * 새로운 학습 목표를 생성합니다.
      *
      * @param groupId 스터디 그룹 ID
-     * @param request 목표 생성 정보 (제목, 포인트 가치, 종료일, 세부 목표)
+     * @param request 목표 생성 정보 (제목, 포인트 가치, 시작일, 종료일, 세부 목표)
      * @return 생성된 목표 정보
      */
     @Operation(summary = "학습 목표 생성", description = "새로운 학습 목표와 세부 목표 항목을 생성합니다.")

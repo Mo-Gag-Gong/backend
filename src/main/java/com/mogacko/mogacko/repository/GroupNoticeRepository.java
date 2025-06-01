@@ -7,5 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface GroupNoticeRepository extends JpaRepository<GroupNotice, Long> {
+
     Page<GroupNotice> findByGroupOrderByCreatedAtDesc(StudyGroup group, Pageable pageable);
 }

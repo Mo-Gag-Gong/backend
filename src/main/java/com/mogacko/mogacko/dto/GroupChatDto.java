@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class GroupChatDto {
     private Long chatId;
     private Long groupId;
-    private Long userId;
+    private Long senderId;
     private String userName;
     private String profileImage;
     private String message;
