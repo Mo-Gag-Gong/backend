@@ -1,4 +1,3 @@
-// src/main/java/com/mogacko/mogacko/controller/MeetingController.java
 package com.mogacko.mogacko.controller;
 
 import com.mogacko.mogacko.dto.*;

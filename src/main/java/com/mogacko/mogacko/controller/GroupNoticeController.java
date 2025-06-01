@@ -30,7 +30,7 @@ public class GroupNoticeController {
      * 스터디 그룹의 공지사항 목록을 페이지 단위로 조회합니다.
      *
      * @param groupId 스터디 그룹 ID
-     * @param page 페이지 번호 (0부터 시작)
+     * @param page 페이지 번호 (1부터 시작)
      * @param size 페이지 크기
      * @return 공지사항 목록
      */
@@ -42,7 +42,7 @@ public class GroupNoticeController {
     @GetMapping
     public ResponseEntity<Page<GroupNoticeDto>> getGroupNotices(
             @Parameter(description = "스터디 그룹 ID") @PathVariable Long groupId,
-            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 번호 (1부터 시작)") @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "10") int size) {
 
         Page<GroupNoticeDto> notices = noticeService.getGroupNotices(groupId, page, size);

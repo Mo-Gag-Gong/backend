@@ -216,8 +216,6 @@ public class StudyGroupService {
         group.setInterest(requestInterest);
         group.setDescription(request.getDescription());
         group.setLocationName(request.getLocationName());
-        group.setStartDate(request.getStartDate());
-        group.setEndDate(request.getEndDate());
         group.setMaxMembers(request.getMaxMembers());
         group.setRequirements(request.getRequirements());
 
@@ -502,8 +500,6 @@ public class StudyGroupService {
                 .interestName(group.getInterest().getInterestName())
                 .description(group.getDescription())
                 .locationName(group.getLocationName())
-                .startDate(group.getStartDate())
-                .endDate(group.getEndDate())
                 .maxMembers(group.getMaxMembers())
                 .currentMembers(currentMembers)
                 .requirements(group.getRequirements())

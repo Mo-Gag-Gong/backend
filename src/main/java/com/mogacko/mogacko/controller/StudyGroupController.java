@@ -30,7 +30,7 @@ public class StudyGroupController {
     /**
      * 모든 활성 스터디 그룹 목록을 페이지 단위로 조회합니다.
      *
-     * @param page 페이지 번호 (0부터 시작)
+     * @param page 페이지 번호 (1부터 시작)
      * @param size 페이지 크기
      * @return 스터디 그룹 목록
      */
@@ -40,7 +40,7 @@ public class StudyGroupController {
     })
     @GetMapping
     public ResponseEntity<Page<StudyGroupDto>> getAllGroups(
-            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "10") int size) {
 
         Page<StudyGroupDto> groups = studyGroupService.getAllGroups(page, size);
@@ -51,7 +51,7 @@ public class StudyGroupController {
      * 특정 카테고리의 스터디 그룹 목록을 페이지 단위로 조회합니다.
      *
      * @param interest 스터디 그룹 카테고리
-     * @param page 페이지 번호 (0부터 시작)
+     * @param page 페이지 번호 (1부터 시작)
      * @param size 페이지 크기
      * @return 카테고리별 스터디 그룹 목록
      */
@@ -62,7 +62,7 @@ public class StudyGroupController {
     @GetMapping("/interest/{interest}")
     public ResponseEntity<Page<StudyGroupDto>> getGroupsByInterest(
             @Parameter(description = "스터디 그룹 카테고리(관심사)") @PathVariable String interest,
-            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "10") int size) {
 
         Page<StudyGroupDto> groups = studyGroupService.getGroupsByInterest(interest, page, size);
@@ -73,7 +73,7 @@ public class StudyGroupController {
      * 키워드로 스터디 그룹을 검색합니다.
      *
      * @param keyword 검색 키워드
-     * @param page 페이지 번호 (0부터 시작)
+     * @param page 페이지 번호 (1부터 시작)
      * @param size 페이지 크기
      * @return 검색 결과 스터디 그룹 목록
      */
@@ -84,7 +84,7 @@ public class StudyGroupController {
     @GetMapping("/search")
     public ResponseEntity<Page<StudyGroupDto>> searchGroups(
             @Parameter(description = "검색 키워드") @RequestParam String keyword,
-            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "10") int size) {
 
         Page<StudyGroupDto> groups = studyGroupService.searchGroups(keyword, page, size);
