@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -14,6 +15,6 @@ public class ProfileUpdateRequest {
     private String gender;
     private String phoneNumber;
     private String locationName;
-    private Integer birthYear;
+    private LocalDate birthDate;
     private List<Long> interestIds;
 }

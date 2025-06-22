@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -69,7 +70,7 @@ public class TestTokenController {
                     .name("테스트 사용자")
                     .gender("M")
                     .phoneNumber("010-1234-5678")
-                    .birthYear(1990)
+                    .birthDate(LocalDate.of(1990, 1, 1))
                     .locationName("서울시 강남구")
                     .onboardingCompleted(true)
                     .build();

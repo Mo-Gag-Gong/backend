@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -93,7 +94,7 @@ public class UserService {
             builder.email(user.getEmail())
                     .gender(profile.getGender())
                     .phoneNumber(profile.getPhoneNumber())
-                    .birthYear(profile.getBirthYear());
+                    .birthDate(profile.getBirthDate());
         }
 
         // 통계 정보 추가
@@ -155,13 +156,13 @@ public class UserService {
         if (request.getName() != null) profile.setName(request.getName());
         if (request.getGender() != null) profile.setGender(request.getGender());
         if (request.getPhoneNumber() != null) profile.setPhoneNumber(request.getPhoneNumber());
-        if (request.getBirthYear() != null) profile.setBirthYear(request.getBirthYear());
+        if (request.getBirthDate() != null) profile.setBirthDate(request.getBirthDate());
         if (request.getLocationName() != null) profile.setLocationName(request.getLocationName());
 
         // 필수 필드가 모두 입력되었는지 확인 (이름, 성별, 생년월일이 필수라고 가정)
         boolean allRequiredFieldsFilled = profile.getName() != null &&
                 profile.getGender() != null &&
-                profile.getBirthYear() != null;
+                profile.getBirthDate() != null;
 
         // 필수 필드가 모두 입력되었으면 onboardingCompleted를 true로 설정
         if (allRequiredFieldsFilled) {
@@ -271,7 +272,7 @@ public class UserService {
                 .name(profile.getName())
                 .gender(profile.getGender())
                 .phoneNumber(profile.getPhoneNumber())
-                .birthYear(profile.getBirthYear())
+                .birthDate(profile.getBirthDate())
                 .profileImage(profile.getUser().getProfileImage())
                 .build();
     }

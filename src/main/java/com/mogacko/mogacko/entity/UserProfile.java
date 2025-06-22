@@ -5,7 +5,9 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Table(name = "user_profiles")
@@ -31,7 +33,8 @@ public class UserProfile {
     @Column(length = 15)
     private String phoneNumber;
 
-    private Integer birthYear;
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
 
     @Column(length = 100)
     private String locationName;

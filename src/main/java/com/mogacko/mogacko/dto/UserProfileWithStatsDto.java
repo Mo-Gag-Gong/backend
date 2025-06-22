@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class UserProfileWithStatsDto {
     private String email;  // 자신의 프로필인 경우에만 포함
     private String gender;  // 자신의 프로필인 경우에만 포함
     private String phoneNumber;  // 자신의 프로필인 경우에만 포함
-    private Integer birthYear;  // 자신의 프로필인 경우에만 포함
+    private LocalDate birthDate;  // 자신의 프로필인 경우에만 포함
     private String profileImage;
     private List<InterestDto> interests;
 
